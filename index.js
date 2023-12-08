@@ -65,8 +65,10 @@ getProductList();
 function addCartItem() {
   const addCardBtn = document.querySelector('.productWrap');
   addCardBtn.addEventListener('click',function(e){
+    
     let id = e.target.getAttribute('id')
     console.log(id);
+
     let quantity = 1;
     // if(id !== null){
     //   quantity +=1;
@@ -97,8 +99,8 @@ function getCartList() {
       const shoppingList = document.querySelector('.shopping-list');
       list.forEach(function(item,index,array){
         //console.log(item.product.title);
-        let itemtotal = item.product.price*item.quantity
-        //console.log(itemtotal);
+        let itemTotal = item.product.price*item.quantity
+        //console.log(itemTotal);
         str += `<tr>
                 <td id="${item.id}">
                     <div class="cardItem-title">
@@ -108,9 +110,9 @@ function getCartList() {
                 </td>
                 <td>NT$${item.product.price}</td>
                 <td>${item.quantity}</td>
-                <td>NT$${itemtotal}</td>
-                <td class="discardBtn" id="${item.id}">
-                    <a href="#" class="material-icons">
+                <td>NT$${itemTotal}</td>
+                <td class="discardBtn" >
+                    <a href="#" id="${item.id}" class="material-icons">
                         clear
                     </a>
                 </td>
@@ -135,22 +137,28 @@ function deleteAllCartList() {
     then(function (response) {
       console.log(response.data);
       const finalTotal = document.querySelector('.total');
-      finalTotal.textContent = 0;
+      finalTotal.textContent = `NT${0}`;
     })
 }
 
 const shoppingList = document.querySelector('.shopping-list');
+let forCartId = "";
 shoppingList.addEventListener('click',function(e){
   console.log(e.target);
+  if(e.target === document.querySelector('.discardBtn>a')){
   forCartId = e.target.getAttribute('id');
   console.log(forCartId);
-  //const deletedItem = document.querySelector(#forCartId);
-  //console.log(deletedItem);
+  const row = e.target.closest('tr');
+  console.log(row);
   deleteCartItem(forCartId);
-  //deletedItem.remove();
+  if(row){
+    row.remove();
+}
+}
+else{
+  console.log("沒點到刪除按鈕，無動作")
+}
 });
-
-
 // 刪除購物車內特定產品
 function deleteCartItem(cartId) {
 
@@ -158,26 +166,57 @@ function deleteCartItem(cartId) {
     then(function (response) {
       console.log(response.data);
       const finalTotal = document.querySelector('.total');
-      finalTotal.textContent = response.data.finalTotal;
+      finalTotal.textContent = `NT${response.data.finalTotal}`;
       console.log(response.data.finalTotal);
     })  
 }
 
-// 送出購買訂單
-function createOrder() {
+let obj ={
+  data:{
+    user:{}
+  }
+};
 
-  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`,
-    {
-      "data": {
-        "user": {
-          "name": "六角學院",
-          "tel": "07-5313506",
-          "email": "hexschool@hexschool.com",
-          "address": "高雄市六角學院路",
-          "payment": "Apple Pay"
-        }
-      }
-    }
+let name = document.querySelector('#customerName');
+console.log(name);
+
+let tel = document.querySelector('#customerPhone');
+let email = document.querySelector('#customerEmail');
+let address = document.querySelector('#customerAddress');
+let payment = document.querySelector('#tradeWay');
+let confirmBtn = document.querySelector('.orderInfo-btn');
+
+
+confirmBtn.addEventListener('click',function(e){
+  obj.data.user.name = name.value;
+  console.log(name.value);
+  console.log(obj.data.user.name);
+  obj.data.user.tel = tel.value;
+  obj.data.user.email = email.value;
+  obj.data.user.address = address.value;
+  obj.data.user.payment = payment.value;
+  console.log(obj);
+  createOrder(obj);
+})
+
+
+
+
+// 送出購買訂單
+function createOrder(oderData) {
+
+  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`, oderData
+    // {
+    //   "data": {
+    //     "user": {
+    //       "name": "六角學院",
+    //       "tel": "07-5313506",
+    //       "email": "hexschool@hexschool.com",
+    //       "address": "高雄市六角學院路",
+    //       "payment": "Apple Pay"
+    //     }
+    //   }
+    // }
   ).
     then(function (response) {
       console.log(response.data);
