@@ -11,25 +11,7 @@
 //   console.log(addCardBtn1.getAttribute("id"));
 // });
 
-
-
-  const addCardBtn = document.querySelector('.productWrap');
-  // let id = addCardBtn.getAttribute("id");
-  // console.log(id);
-  // let quantity = 1 ;
-
-  addCardBtn.addEventListener('click',function(e){
-    console.log(e.target);
-    //console.log(e.target.getAttribute('id'));
-    // quantity +=1;
-    // console.log(quantity);
-  });
-
-
-
-
-
-
+const finalTotal = document.querySelector('.total');
 const api_path = "dodo";
 const token = "3Lq8WjY22kYkRgs1bQbwxnamk642";
 
@@ -42,6 +24,7 @@ function getProductList() {
       let list = response.data.products;
       //console.log(list);
       const productWrap = document.querySelector('.productWrap')
+      //console.log("productWrap:",productWrap);
       list.forEach(function(item,index,array){
         str += `<li class="productCard" id=${item.id}>
         <h4 class="productType">新品</h4>
@@ -61,15 +44,27 @@ function getProductList() {
 }
 getProductList();
 
-//加入購物車
-function addCartItem() {
-  const addCardBtn = document.querySelector('.productWrap');
-  addCardBtn.addEventListener('click',function(e){
-    
-    let id = e.target.getAttribute('id')
-    console.log(id);
 
-    let quantity = 1;
+const productWrap = document.querySelector('.productWrap');
+// let id = e.target.getAttribute("id");
+// console.log(id);
+let quantity = 1 ;
+productWrap.addEventListener('click',function(e){
+  //console.log(e.target);
+  let id = e.target.getAttribute("id");
+  console.log(e.target.getAttribute('id'));
+  console.log(quantity);
+  addCartItem(id,quantity);
+});
+
+//加入購物車
+function addCartItem(id,quantity) {
+  // const productWrap = document.querySelector('.productWrap');
+  // productWrap.addEventListener('click',function(e){
+  //   let id = e.target.getAttribute('id')
+  //   console.log(id);
+
+    //let quantity = 1;
     // if(id !== null){
     //   quantity +=1;
     //   console.log(quantity);
@@ -82,17 +77,17 @@ function addCartItem() {
     }
   }).then(function (response) {
       console.log(response.data);
-      //getCartList();
+      getCartList();
     });
-  });
-}
+  };
+//}
 
 
 // 取得購物車列表
 function getCartList() {
   axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`).
     then(function (response) {
-      console.log(response.data);
+      //console.log(response.data);
             let str = [];
       let list = response.data.carts
       //console.log(list);
@@ -120,10 +115,10 @@ function getCartList() {
       });
       shoppingList.innerHTML = str;
       //console.log(str);
-      
+      finalTotal.textContent = `NT${response.data.finalTotal}`;
     })
 }
-getCartList();
+
 
 
 const discardAll = document.querySelector('.discardAllBtn');
@@ -131,12 +126,12 @@ discardAll.addEventListener('click',function(e){
   deleteAllCartList();
   shoppingList.innerHTML = "";
 })
+
 // 清除購物車內全部產品
 function deleteAllCartList() {
   axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`).
     then(function (response) {
       console.log(response.data);
-      const finalTotal = document.querySelector('.total');
       finalTotal.textContent = `NT${0}`;
     })
 }
@@ -164,21 +159,22 @@ function deleteCartItem(cartId) {
 
   axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts/${cartId}`).
     then(function (response) {
-      console.log(response.data);
-      const finalTotal = document.querySelector('.total');
+      //console.log(response.data);
       finalTotal.textContent = `NT${response.data.finalTotal}`;
-      console.log(response.data.finalTotal);
+      //console.log(response.data.finalTotal);
     })  
 }
 
+
+
+// 送出購買訂單-操作
 let obj ={
   data:{
     user:{}
   }
 };
-
-let name = document.querySelector('#customerName');
-console.log(name);
+let name1 = document.querySelector('#customerName');
+console.log(name1);
 
 let tel = document.querySelector('#customerPhone');
 let email = document.querySelector('#customerEmail');
@@ -188,8 +184,8 @@ let confirmBtn = document.querySelector('.orderInfo-btn');
 
 
 confirmBtn.addEventListener('click',function(e){
-  obj.data.user.name = name.value;
-  console.log(name.value);
+  obj.data.user.name = name1.value;
+  console.log(name1.value);
   console.log(obj.data.user.name);
   obj.data.user.tel = tel.value;
   obj.data.user.email = email.value;
@@ -197,12 +193,10 @@ confirmBtn.addEventListener('click',function(e){
   obj.data.user.payment = payment.value;
   console.log(obj);
   createOrder(obj);
+  deleteAllCartList();
 })
 
-
-
-
-// 送出購買訂單
+// 送出購買訂單 函數
 function createOrder(oderData) {
 
   axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`, oderData
@@ -226,63 +220,5 @@ function createOrder(oderData) {
     })
 }
 
-// 取得訂單列表
-function getOrderList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      console.log(response.data);
-    })
-}
 
-// 修改訂單狀態
-
-function editOrderList(orderId) {
-  axios.put(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      "data": {
-        "id": orderId,
-        "paid": true
-      }
-    },
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      console.log(response.data);
-    })
-}
-
-// 刪除全部訂單
-function deleteAllOrder() {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-
-    })
-}
-
-// 刪除特定訂單
-function deleteOrderItem(orderId) {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders/${orderId}`,
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      console.log(response.data);
-
-    })
-}
 
