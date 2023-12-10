@@ -1,17 +1,61 @@
 
-const orderPagetable = document.querySelector('.orderPage-table');
-const orderList = document.querySelector('.orderList');
 const api_path = "dodo";
 const token = "3Lq8WjY22kYkRgs1bQbwxnamk642";
+
+const orderPagetable = document.querySelector('.orderPage-table');
+const orderList = document.querySelector('.orderList');
 let listItems =[];
 
+//初始化頁面
 function init(){
     getOrderList();
 }
 init();
 
+//修改訂單狀態-操作
+
+orderList.addEventListener('click',function(e){
+    
+
+})
+
+orderList.addEventListener("click",function(e){
+    e.preventDefault();
+    const targetClass = e.target.getAttribute('class');
+    let id = e.target.getAttribute('id');
+    if(e.target.value === "刪除"){
+        //console.log(e.target);
+        let deleteTargetId = e.target.id;
+        //console.log(deleteTargetId);
+        deleteOrderItem(deleteTargetId);
+        let row = e.target.closest('tr');
+        //console.log(row);
+        row.remove();
+        return;
+    }    
+    if (targetClass == "orderStatus"){
+        let status =e.target.getAttribute('data-status');
+        editOrderList(status,id);
+    }
+    // if(e.target === document.querySelector('.orderStatus>a')){
+    //     //console.log("你點擊到訂單狀態");
+    //     let editStatusId = e.target.getAttribute('id');
+    //     let status = e.target.getAttribute("data-status");
+    //     //console.log(status,editStatusId);
+    //     editOrderList(status,editStatusId);
+    //     return;
+    
+  })
+
+// 刪除全部訂單-操作
+const discardAll = document.querySelector('.discardAllBtn');
+discardAll.addEventListener('click', function(e){
+    deleteAllOrder();
+})
+
+//繪製圓餅圖-依照類別繪製
 function renderC3(){
-    console.log("renderC3 listItems:",listItems);
+    //console.log("renderC3 listItems:",listItems);
     //物件資料搜集
     let total ={};
     listItems.forEach(function(item){
@@ -23,10 +67,10 @@ function renderC3(){
             }
         })
     })
-    console.log(total);
+    //console.log(total);
     //物件資料轉成陣列資料 total = {收納: 5670, 床架: 33780, 窗簾: 1200}
 let categoryAry = Object.keys(total);
-console.log(categoryAry);
+//console.log(categoryAry);
 let newData = [];
 categoryAry.forEach(function(item,index,array){
     let ary = [];
@@ -34,7 +78,7 @@ categoryAry.forEach(function(item,index,array){
     ary.push(total[item]);
     newData.push(ary);
 })
-console.log(newData);
+//console.log(newData);
 // C3.js
 let chart = c3.generate({
     bindto: '#chart', // HTML 元素綁定
@@ -51,6 +95,12 @@ let chart = c3.generate({
 
 }
 
+//繪製圓餅圖-依照品項營收繪製
+
+
+
+
+//圓餅圖範例程式
 // C3.js
 // let chart = c3.generate({
 //     bindto: '#chart', // HTML 元素綁定
@@ -80,64 +130,61 @@ function getOrderList() {
         }
       })
       .then(function (response) {
-        console.log(response.data);
+        //console.log(response.data);
 
         let str =[];
         let allProductItems = [];
 
-        console.log('orderList:',orderList);
+        //console.log('orderList:',orderList);
         listItems = response.data.orders;
-        let paid = listItems.paid;
         let orderStatus;
-        console.log('listItems:',listItems);
+        //console.log('listItems:',listItems);
 
         //遍歷每一筆訂單
         listItems.forEach(function(item){
             //let createAt = item.createAt;
-            console.log('createAt:',item.createdAt);
-            console.log('total:',item.total);
-            console.log('quantity:',item.quantity);
-            if(paid === true){
+            //console.log('createAt:',item.createdAt);
+            //console.log('total:',item.total);
+            //console.log('quantity:',item.quantity);
+            //訂單狀態true&false的對應顯示文字
+            if(item.paid == true){
                 orderStatus = "已處理";
             }else{
                 orderStatus = "未處理";
             }
-            console.log(paid);
+            //console.log(orderStatus);
             let titleStr =[];
             let productItems =[];
             let id = item.id;
-            console.log('id:',id);
-            //const titleList = document.querySelector('.titleList');
-            //console.log("titleList:",titleList);
+            //console.log('id:',id);
             let products = item.products;
-            console.log('products:',products);
+            //console.log('products:',products);
             //遍歷每一筆訂單內的每一筆產品
             products.forEach(function(item,index,array){
                 //計算每一筆訂單之單一產品款式及數量
-                let id = item.id;
-                let title = item.title;
-                let quantity = item.quantity;
-                let price = item.price;
-                let category = item.category;
-                console.log(productItems);
-                productItems.push({'id':id ,'title':title ,'quantity': quantity,'price':price,'category':category});
-
-                console.log(item.title);
+                // let id = item.id;
+                // let title = item.title;
+                // let quantity = item.quantity;
+                // let price = item.price;
+                // let category = item.category;
+                // //console.log(productItems);
+                // productItems.push({'id':id ,'title':title ,'quantity': quantity,'price':price,'category':category});
+                //console.log(item.title);
                 titleStr +=
                 `<p>${item.title}</p>`
             }),
-            console.log(productItems);
-            allProductItems.push(productItems);
-            allProductItems.forEach(function(item1){
-                if(item1.length === 1){
+            // //console.log(productItems);
+            // allProductItems.push(productItems);
+            // allProductItems.forEach(function(item1){
+            //     if(item1.length === 1){
 
-                }
-                if(item1.length>1){
-                item1.forEach(function(item2){
+            //     }
+            //     if(item1.length>1){
+            //     item1.forEach(function(item2){
                     
-                })
-            }
-            })
+            //     })
+            // }
+            // })
 
             str +=        
             `<tr>
@@ -152,8 +199,8 @@ function getOrderList() {
             ${titleStr}
             </td>
             <td>${formatTimestampToDateString(item.createdAt)}</td>
-            <td class="orderStatus">
-              <a href="#" id="${item.id}" data-status="${item.paid}">${orderStatus}</a>
+            <td >
+              <a href="#" class="orderStatus" id="${item.id}" data-status="${item.paid}">${orderStatus}</a>
             </td>
             <td>
               <input id="${item.id}" type="button" class="delSingleOrder-Btn" value="刪除">
@@ -161,35 +208,25 @@ function getOrderList() {
         </tr>`
         })
         orderList.innerHTML = str;
-        console.log(allProductItems);
+        ////console.log(allProductItems);
         renderC3();
     })
   }
   
   
-//不懂修改訂單狀態的邏輯
 
-orderList.addEventListener('click',function(e){
-    e.preventDefault();
-    if (e.target === document.querySelector('.orderStatus>a')){
-        let status = 
-        console.log(e.target.id);
-        console.log("你點擊到訂單狀態");
-        editOrderList(status,e.target.id)
-    }else{
-        return
-    }
-})
 
 
   // 修改訂單狀態
   function editOrderList(status,orderId) {
-    console.log(status,id)
+    console.log(status,orderId)
     let newStatus;
-    if(status == true){
+    if(status === 'true'){//由於 data-status可能是字串，你可能需要將 status 的比較改為字串 "true"
         newStatus = false;
+        console.log(newStatus);
     }else{
-        newStatus = true
+        newStatus = true;
+        console.log(newStatus)
     }
     axios.put(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
       {
@@ -205,20 +242,24 @@ orderList.addEventListener('click',function(e){
       })
       .then(function (response) {
         console.log(response.data);
-        if(response.data.paid === true){
-            document.querySelector('.orderStatus>a').textContent= "已處理";
-        }else{
-            document.querySelector('.orderStatus>a').textContent= "未處理";
-        }
+        getOrderList();
+        // response.data.orders.forEach(function(item){
+        //     if(item.id === orderId){
+        //         if(item.paid === true){
+        //             document.querySelector('.orderStatus>a').textContent= "已處理";
+        //         }else{
+        //             document.querySelector('.orderStatus>a').textContent= "未處理";
+        //         }
+        //     }
+        })
+        // if(response.data.paid == true){
+        //     document.querySelector('.orderStatus>a').textContent= "已處理";
+        // }else{
+        //     document.querySelector('.orderStatus>a').textContent= "未處理";
+        // }
         
-      })
   }
-  
-const discardAll = document.querySelector('.discardAllBtn');
-discardAll.addEventListener('click', function(e){
-    deleteAllOrder();
-    
-})
+
 
   // 刪除全部訂單
   function deleteAllOrder() {
@@ -235,21 +276,7 @@ discardAll.addEventListener('click', function(e){
   }
 
 
-  orderList.addEventListener("click",function(e){
-    if(e.target.value === "刪除"){
-        console.log(e.target);
-        let deleteTargetId = e.target.id;
-        console.log(deleteTargetId);
-        deleteOrderItem(deleteTargetId);
-        let row = e.target.closest('tr');
-        console.log(row);
-        row.remove();
-    }else{
-        console.log("沒有點到刪除按鈕");
-        getOrderList();
-        
-    }
-  })
+
   // 刪除特定訂單
   function deleteOrderItem(orderId) {
     axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders/${orderId}`,
@@ -259,7 +286,7 @@ discardAll.addEventListener('click', function(e){
         }
       })
       .then(function (response) {
-        console.log(response.data);
+        //console.log(response.data);
         getOrderList();
       })
   }
