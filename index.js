@@ -12,6 +12,7 @@
 // });
 
 const finalTotal = document.querySelector('.total');
+let cartList = []; //購物車列表
 const api_path = "dodo";
 const token = "3Lq8WjY22kYkRgs1bQbwxnamk642";
 
@@ -32,7 +33,7 @@ function getProductList() {
         <a href="#" class="addCardBtn" id=${item.id}>加入購物車</a>
         <h3>${item.title}</h3>
         <del class="originPrice">NT$${item.origin_price}</del>
-        <p class="nowPrice">NT$${item.price}</p>
+        <p class="nowPrice">NT$${addCommasToNumber(item.price)}</p>
     </li> `
       });
       productWrap.innerHTML = str;
@@ -89,10 +90,10 @@ function getCartList() {
     then(function (response) {
       //console.log(response.data);
             let str = [];
-      let list = response.data.carts
+      cartList = response.data.carts
       //console.log(list);
       const shoppingList = document.querySelector('.shopping-list');
-      list.forEach(function(item,index,array){
+      cartList.forEach(function(item,index,array){
         //console.log(item.product.title);
         let itemTotal = item.product.price*item.quantity
         //console.log(itemTotal);
@@ -115,7 +116,7 @@ function getCartList() {
       });
       shoppingList.innerHTML = str;
       //console.log(str);
-      finalTotal.textContent = `NT${response.data.finalTotal}`;
+      finalTotal.textContent = `NT${addCommasToNumber(response.data.finalTotal)}`;
     })
 }
 
@@ -160,7 +161,7 @@ function deleteCartItem(cartId) {
   axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts/${cartId}`).
     then(function (response) {
       //console.log(response.data);
-      finalTotal.textContent = `NT${response.data.finalTotal}`;
+      finalTotal.textContent = `NT${addCommasToNumber(response.data.finalTotal)}`;
       //console.log(response.data.finalTotal);
     })  
 }
@@ -193,6 +194,17 @@ confirmBtn.addEventListener('click',function(e){
   obj.data.user.payment = payment.value;
   console.log(obj);
   createOrder(obj);
+  e.preventDefault();
+
+  if (obj.data.user.name === '' || obj.data.user.tel === '' || obj.data.user.email === '' || obj.data.user.address === '' || obj.data.user.payment === ''){
+    alert('內容不可為空！');
+    return;
+  }
+
+  if(cartList.length === 0){
+    alert('購物車沒有產品！');
+    return;
+  }
   deleteAllCartList();
 })
 
@@ -220,5 +232,9 @@ function createOrder(oderData) {
     })
 }
 
+// 千位數逗號處理
+function addCommasToNumber(number) {
+  return number.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
 
 

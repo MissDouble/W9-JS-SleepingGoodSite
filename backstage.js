@@ -1,3 +1,7 @@
+
+
+let dataforChart = [];
+
 // C3.js
 let chart = c3.generate({
     bindto: '#chart', // HTML 元素綁定
@@ -17,9 +21,15 @@ let chart = c3.generate({
         }
     },
 });
+
+
 const orderPagetable = document.querySelector('.orderPage-table');
 const api_path = "dodo";
 const token = "3Lq8WjY22kYkRgs1bQbwxnamk642";
+
+
+
+
 
 // 取得訂單列表
 function getOrderList() {
@@ -33,32 +43,61 @@ function getOrderList() {
         console.log(response.data);
 
         let str =[];
-
+        let allProductItems = [];
         const orderList = document.querySelector('.orderList');
         console.log('orderList:',orderList);
- 
         let listItems = response.data.orders;
+        let paid = listItems.paid;
         console.log('listItems:',listItems);
+
+        //遍歷每一筆訂單
         listItems.forEach(function(item){
-            let status = response.data.status;
-            if(status === true){
-                status = "已處理";
+            //let createAt = item.createAt;
+            console.log('createAt:',item.createdAt);
+            console.log('total:',item.total);
+            console.log('quantity:',item.quantity);
+            if(paid === true){
+                paid = "已處理";
             }else{
-                status = "未處理";
+                paid = "未處理";
             }
-            console.log(status);
+            console.log(paid);
             let titleStr =[];
+            let productItems =[];
             let id = item.id;
             console.log('id:',id);
             //const titleList = document.querySelector('.titleList');
             //console.log("titleList:",titleList);
             let products = item.products;
             console.log('products:',products);
+            //遍歷每一筆訂單內的每一筆產品
             products.forEach(function(item,index,array){
+                //計算每一筆訂單之單一產品款式及數量
+                let id = item.id;
+                let title = item.title;
+                let quantity = item.quantity;
+                let price = item.price;
+                let category = item.category;
+                console.log(productItems);
+                productItems.push({'id':id ,'title':title ,'quantity': quantity,'price':price,'category':category});
+
                 console.log(item.title);
                 titleStr +=
                 `<p>${item.title}</p>`
             }),
+            console.log(productItems);
+            allProductItems.push(productItems);
+            allProductItems.forEach(function(item1){
+                if(item1.length === 1){
+
+                }
+                if(item1.length>1){
+                item1.forEach(function(item2){
+                    
+                })
+            }
+            })
+
             str +=        
             `<tr>
             <td>${item.id}</td>
@@ -71,26 +110,31 @@ function getOrderList() {
             <td class="titleList">
             ${titleStr}
             </td>
-            <td>${item.createAt}</td>
+            <td>${formatTimestampToDateString(item.createdAt)}</td>
             <td class="orderStatus">
-              <a href="#">${status}</a>
+              <a href="#" id="${item.id}">${paid}</a>
             </td>
             <td>
               <input id="${item.id}" type="button" class="delSingleOrder-Btn" value="刪除">
             </td>
         </tr>`
-        //})
-
-
-            // titleList.innerHTML = titleStr;
-            // console.log(titleStr);
-
         })
-orderList.innerHTML = str;
-      })
+        orderList.innerHTML = str;
+        console.log(allProductItems);
+    })
   }
   getOrderList();
   
+//不懂修改訂單狀態的邏輯
+  const orderList = document.querySelector('.orderList');
+orderList.addEventListener('click',function(e){
+    if (e.target === document.querySelector('.orderStatus>a')){
+        console.log(e.target.id);
+        editOrderList(e.target.id)
+    }
+})
+
+
   // 修改訂單狀態
   
   function editOrderList(orderId) {
@@ -108,6 +152,12 @@ orderList.innerHTML = str;
       })
       .then(function (response) {
         console.log(response.data);
+        if(response.data.paid === true){
+            document.querySelector('.orderStatus>a').textContent= "已處理";
+        }else{
+            document.querySelector('.orderStatus>a').textContent= "未處理";
+        }
+        
       })
   }
   
@@ -154,4 +204,14 @@ discardAll.addEventListener('click', function(e){
         console.log(response.data);
         
       })
+  }
+
+
+//時間戳記轉換為年月日格式
+function formatTimestampToDateString(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}/${month}/${day}`;
   }
