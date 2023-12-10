@@ -1,35 +1,75 @@
 
+const orderPagetable = document.querySelector('.orderPage-table');
+const orderList = document.querySelector('.orderList');
+const api_path = "dodo";
+const token = "3Lq8WjY22kYkRgs1bQbwxnamk642";
+let listItems =[];
 
-let dataforChart = [];
+function init(){
+    getOrderList();
+}
+init();
 
+function renderC3(){
+    console.log("renderC3 listItems:",listItems);
+    //物件資料搜集
+    let total ={};
+    listItems.forEach(function(item){
+        item.products.forEach(function(productItem){
+            if(total[productItem.category]==undefined){
+                total[productItem.category] = productItem.price*productItem.quantity;
+            }else{
+                total[productItem.category] += productItem.price*productItem.quantity;
+            }
+        })
+    })
+    console.log(total);
+    //物件資料轉成陣列資料 total = {收納: 5670, 床架: 33780, 窗簾: 1200}
+let categoryAry = Object.keys(total);
+console.log(categoryAry);
+let newData = [];
+categoryAry.forEach(function(item,index,array){
+    let ary = [];
+    ary.push(item);
+    ary.push(total[item]);
+    newData.push(ary);
+})
+console.log(newData);
 // C3.js
 let chart = c3.generate({
     bindto: '#chart', // HTML 元素綁定
     data: {
         type: "pie",
-        columns: [
-        ['Louvre 雙人床架', 1],
-        ['Antony 雙人床架', 2],
-        ['Anty 雙人床架', 3],
-        ['其他', 4],
-        ],
+        columns: newData,
         colors:{
-            "Louvre 雙人床架":"#DACBFF",
-            "Antony 雙人床架":"#9D7FEA",
-            "Anty 雙人床架": "#5434A7",
-            "其他": "#301E5F",
+            "收納":"#DACBFF",
+            "床架":"#9D7FEA",
+            "窗簾": "#5434A7",
         }
     },
 });
 
+}
 
-const orderPagetable = document.querySelector('.orderPage-table');
-const api_path = "dodo";
-const token = "3Lq8WjY22kYkRgs1bQbwxnamk642";
-
-
-
-
+// C3.js
+// let chart = c3.generate({
+//     bindto: '#chart', // HTML 元素綁定
+//     data: {
+//         type: "pie",
+//         columns: [
+//         ['Louvre 雙人床架', 1],
+//         ['Antony 雙人床架', 2],
+//         ['Anty 雙人床架', 3],
+//         ['其他', 4],
+//         ],
+//         colors:{
+//             "Louvre 雙人床架":"#DACBFF",
+//             "Antony 雙人床架":"#9D7FEA",
+//             "Anty 雙人床架": "#5434A7",
+//             "其他": "#301E5F",
+//         }
+//     },
+// });
 
 // 取得訂單列表
 function getOrderList() {
@@ -44,10 +84,11 @@ function getOrderList() {
 
         let str =[];
         let allProductItems = [];
-        const orderList = document.querySelector('.orderList');
+
         console.log('orderList:',orderList);
-        let listItems = response.data.orders;
+        listItems = response.data.orders;
         let paid = listItems.paid;
+        let orderStatus;
         console.log('listItems:',listItems);
 
         //遍歷每一筆訂單
@@ -57,9 +98,9 @@ function getOrderList() {
             console.log('total:',item.total);
             console.log('quantity:',item.quantity);
             if(paid === true){
-                paid = "已處理";
+                orderStatus = "已處理";
             }else{
-                paid = "未處理";
+                orderStatus = "未處理";
             }
             console.log(paid);
             let titleStr =[];
@@ -112,7 +153,7 @@ function getOrderList() {
             </td>
             <td>${formatTimestampToDateString(item.createdAt)}</td>
             <td class="orderStatus">
-              <a href="#" id="${item.id}">${paid}</a>
+              <a href="#" id="${item.id}" data-status="${item.paid}">${orderStatus}</a>
             </td>
             <td>
               <input id="${item.id}" type="button" class="delSingleOrder-Btn" value="刪除">
@@ -121,28 +162,40 @@ function getOrderList() {
         })
         orderList.innerHTML = str;
         console.log(allProductItems);
+        renderC3();
     })
   }
-  getOrderList();
+  
   
 //不懂修改訂單狀態的邏輯
-  const orderList = document.querySelector('.orderList');
+
 orderList.addEventListener('click',function(e){
+    e.preventDefault();
     if (e.target === document.querySelector('.orderStatus>a')){
+        let status = 
         console.log(e.target.id);
-        editOrderList(e.target.id)
+        console.log("你點擊到訂單狀態");
+        editOrderList(status,e.target.id)
+    }else{
+        return
     }
 })
 
 
   // 修改訂單狀態
-  
-  function editOrderList(orderId) {
+  function editOrderList(status,orderId) {
+    console.log(status,id)
+    let newStatus;
+    if(status == true){
+        newStatus = false;
+    }else{
+        newStatus = true
+    }
     axios.put(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
       {
         "data": {
           "id": orderId,
-          "paid": true
+          "paid": newStatus
         }
       },
       {
@@ -176,10 +229,13 @@ discardAll.addEventListener('click', function(e){
         }
       })
       .then(function (response) {
-        orderPagetable.innerHTML = ""; 
+        orderList.innerHTML = ""; 
+        resetC3();
       })
   }
-  orderPagetable.addEventListener("click",function(e){
+
+
+  orderList.addEventListener("click",function(e){
     if(e.target.value === "刪除"){
         console.log(e.target);
         let deleteTargetId = e.target.id;
@@ -190,6 +246,8 @@ discardAll.addEventListener('click', function(e){
         row.remove();
     }else{
         console.log("沒有點到刪除按鈕");
+        getOrderList();
+        
     }
   })
   // 刪除特定訂單
@@ -202,7 +260,7 @@ discardAll.addEventListener('click', function(e){
       })
       .then(function (response) {
         console.log(response.data);
-        
+        getOrderList();
       })
   }
 
@@ -215,3 +273,20 @@ function formatTimestampToDateString(timestamp) {
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}/${month}/${day}`;
   }
+
+// 沒有資料時的 C3.js 
+function resetC3(){
+  newData = [];
+  let chart = c3.generate({
+      bindto: '#chart', // HTML 元素綁定
+      data: {
+          type: "pie",
+          columns: newData,
+          colors:{
+              "收納":"#DACBFF",
+              "床架":"#9D7FEA",
+              "窗簾": "#5434A7",
+          }
+      },
+  });
+}
