@@ -1,4 +1,4 @@
-// import './node_modules/axios/dist/axios.min.js';
+import './node_modules/axios/dist/axios.min.js';
 
 // import axios from 'axios';
 // console.log(axios.isCancel('something'));
