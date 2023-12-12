@@ -1,6 +1,5 @@
 // import './node_modules/axios/dist/axios.min.js';
-// import './node_modules/axios/esm/axios.min.js';
-import axios from "../node_modules/axios/dist/esm/axios.js";
+
 // import axios from 'axios';
 // console.log(axios.isCancel('something'));
 // const axios = require('axios');
