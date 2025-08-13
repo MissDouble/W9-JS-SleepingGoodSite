@@ -35,7 +35,7 @@ function getProductList() {
         str += `<li class="productCard" id=${item.id}>
         <h4 class="productType">新品</h4>
         <img src="${item.images}" alt="商品照">
-        <a href="#" class="addCardBtn" id=${item.id}>加入購物車</a>
+        <a class="addCardBtn" id=${item.id}>加入購物車</a>
         <h3>${item.title}</h3>
         <del class="originPrice">NT$${item.origin_price}</del>
         <p class="nowPrice">NT$${addCommasToNumber(item.price)}</p>
@@ -113,7 +113,7 @@ function getCartList() {
                 <td>${item.quantity}</td>
                 <td>NT$${itemTotal}</td>
                 <td class="discardBtn" >
-                    <a href="#" id="${item.id}" class="material-icons">
+                    <a id="${item.id}" class="material-icons">
                         clear
                     </a>
                 </td>
